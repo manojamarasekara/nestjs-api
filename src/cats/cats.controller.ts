@@ -2,65 +2,159 @@ import {
   Body,
   Controller,
   Get,
-  HttpCode,
   HttpStatus,
   Param,
   Post,
   Put,
   Delete,
   Res,
+  HttpException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { CreateCatDto } from './dto/create-cat-dto';
 import { UpdateCatDto } from './dto/update-cat-dto';
 
+/**Ask question about the Httpcode */
 @Controller('cats')
 export class CatsController {
   @Get()
-  findAll(@Res() res: Response) {
-    res.status(HttpStatus.OK).json([
-      {
-        status: HttpStatus.OK,
-        Data: [
-          {
-            message: 'This action returns all cats',
-          },
-        ],
-      },
-    ]);
+  findAll(@Res({ passthrough: true }) res: Response) {
+    try {
+      res.status(HttpStatus.OK).json([
+        {
+          status: HttpStatus.OK,
+          Data: [
+            {
+              message: 'This action returns all cats',
+            },
+          ],
+        },
+      ]);
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: 'Something went wrong fetching all cats',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error,
+        },
+      );
+    }
   }
   @Get(':id')
   findOneById(@Param('id') id: string, @Res() res: Response) {
-    res.status(HttpStatus.OK).json([
-      {
-        status: HttpStatus.OK,
-        Data: [
-          {
-            message: `This action returns a #${id} cat`,
-          },
-        ],
-      },
-    ]);
+    try {
+      res.status(HttpStatus.OK).json([
+        {
+          status: HttpStatus.OK,
+          Data: [
+            {
+              message: `This action returns a #${id} cat`,
+            },
+          ],
+        },
+      ]);
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: `Something went wrong fetching #${id} cat`,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error,
+        },
+      );
+    }
   }
 
   @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createCatDto: CreateCatDto) {
-    console.log('Create CatDto:', createCatDto);
-    return 'This action creates a new cat';
+  async create(@Body() createCatDto: CreateCatDto, @Res() res: Response) {
+    try {
+      res.status(HttpStatus.CREATED).json([
+        {
+          status: HttpStatus.CREATED,
+          Data: [
+            {
+              message: `This action creates a new cat`,
+              details: createCatDto,
+            },
+          ],
+        },
+      ]);
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: `Something went wrong creating a new cat`,
+          payload: createCatDto,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error,
+        },
+      );
+    }
   }
 
   @Put(':id')
-  @HttpCode(HttpStatus.ACCEPTED)
-  update(@Param('id') id: string, @Body() updateCatDto: UpdateCatDto) {
-    console.log('Update CatDto:', updateCatDto);
-    return `This action updates a #${id} cat`;
+  update(
+    @Param('id') id: string,
+    @Body() updateCatDto: UpdateCatDto,
+    @Res() res: Response,
+  ) {
+    try {
+      res.status(HttpStatus.ACCEPTED).json([
+        {
+          status: HttpStatus.ACCEPTED,
+          Data: [
+            {
+              message: `This action updates a #${id} cat`,
+              details: updateCatDto,
+            },
+          ],
+        },
+      ]);
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: `Something went wrong updating #${id} cat`,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error,
+        },
+      );
+    }
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    console.log('Delete Cat with ID:', id);
-    return `This action removes a #${id} cat`;
+  remove(@Param('id') id: string, @Res() res: Response) {
+    try {
+      res.status(HttpStatus.NO_CONTENT).json([
+        {
+          status: HttpStatus.NO_CONTENT,
+          Data: [
+            {
+              message: `This action delete a #${id} cat`,
+            },
+          ],
+        },
+      ]);
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.INTERNAL_SERVER_ERROR,
+          error: `Something went wrong deleting #${id} cat`,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          cause: error,
+        },
+      );
+    }
   }
 }
